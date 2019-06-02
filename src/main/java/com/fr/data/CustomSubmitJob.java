@@ -123,7 +123,7 @@ public class CustomSubmitJob extends DefinedSubmitJob {
         maps.put("senderLoginName", "test01");
         String json = JSONObject.toJSONString(map);
         // 类型
-        maps.put("transfertype", "json");
+//        maps.put("transfertype", "json");
         // 表单数据
         maps.put("data", json);
 

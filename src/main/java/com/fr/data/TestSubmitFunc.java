@@ -114,7 +114,7 @@ public class TestSubmitFunc extends AbstractFunction {
 
     public Object run(Object[] args) {
         String token = getToken();
-        Map<String, Object> maps = new HashMap<>(2);
+        Map<String, Object> maps = new HashMap<String, Object>(2);
         // 发起人登录名
         maps.put("senderLoginName", "test01");
         // 类型
