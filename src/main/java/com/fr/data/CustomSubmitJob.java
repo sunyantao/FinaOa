@@ -63,6 +63,68 @@ public class CustomSubmitJob extends DefinedSubmitJob {
         }
         return token;
     }
+    /**
+     * 分隔符
+     */
+    public static final String FILE_BOUNDARY = "-----";
+
+    /**
+     * @param file
+     * @return
+     */
+    private static byte[] getStartData(File file) throws Exception {
+        StringBuffer sb = new StringBuffer();
+        sb.append("--");
+        sb.append(FILE_BOUNDARY);
+        sb.append("\r\n");
+        sb.append("Content-Disposition: form-data; \r\n name=\"1\"; filename=\"" + file.getName() + "\"\r\n");
+        sb.append("Content-Type: msoffice\r\n\r\n");
+        return sb.toString().getBytes("UTF-8");
+    }
+    public static String upload(String tokenid){
+        File uploadFile=new File("E:/GettingStarted.png");
+        StringBuffer sb = new StringBuffer();
+        try {
+            URL preUrl = new URL(OA_URL +"/attachment/attachment?token="+tokenid+"&applicationCategory=0&extensions=&firstSave=true");
+            // 设置请求头
+            HttpURLConnection hc = (HttpURLConnection)preUrl.openConnection();
+            hc.setDoOutput(true);
+            hc.setUseCaches(false);
+            hc.setRequestProperty("contentType", "charset=utf-8");
+            hc.setRequestMethod("POST");
+            hc.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + FILE_BOUNDARY);
+            //
+            DataOutputStream dos = new DataOutputStream(hc.getOutputStream());
+            dos.write(getStartData(uploadFile));
+            BufferedInputStream input = new BufferedInputStream(new FileInputStream(uploadFile));
+            int data = 0;
+            while((data = input.read()) != -1) {
+                dos.write(data);
+            }
+            dos.write(("\r\n--" + FILE_BOUNDARY + "--\r\n").getBytes());
+            dos.flush();
+            dos.close();
+
+            InputStream is = hc.getInputStream();
+            int ch;
+            while((ch = is.read()) != -1) {
+                sb.append((char)ch);
+            }
+            if(is != null)
+                is.close();
+            if(input != null)
+                input.close();
+            if(sb.toString() != null && !"".equals(sb.toString())) {
+                System.out.println("附件上传成功！！ID:" + sb.toString());
+            } else {
+                System.out.println("附件上传失败！！");
+            }
+        }catch(Exception e) {
+            System.out.println("附件上传失败！！错误信息：" + e.getMessage());
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 
     public static String httpPost(String BMPUrl, Map<String, Object> maps) {
         String result = "";
@@ -113,7 +175,9 @@ public class CustomSubmitJob extends DefinedSubmitJob {
         String token = getToken();
         System.out.println(token);
         Map<String, Object> map = new HashMap<String, Object>(3);
-
+        String html = upload(token);
+        System.out.println(html);
+//        Long attachId = Long.parseLong(upload(token));
         //字段数据
         map.put("field1", "addresss");
         map.put("field2", "department");
@@ -126,6 +190,8 @@ public class CustomSubmitJob extends DefinedSubmitJob {
 //        maps.put("transfertype", "json");
         // 表单数据
         maps.put("data", json);
+//        maps.put("attachments",new Long[] {attachId});
+//        maps.put("formContentAtt",formcontentatt);//表单附件控件
 
         String BMPUrl = OA_URL + BMP_URL + TEMPLATE_CODE + "?token=" + token;
         String result = httpPost(BMPUrl, maps);
